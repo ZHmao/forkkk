@@ -2,6 +2,7 @@
 *.py[cod]
 .idea
 log.py
+xlrd
 
 #windows
 *.xls
