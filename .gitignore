@@ -1,0 +1,7 @@
+#python
+*.py[cod]
+
+#windows
+*.xls
+*.bak
+*.xml
