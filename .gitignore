@@ -1,5 +1,7 @@
 #python
 *.py[cod]
+.idea
+log.py
 
 #windows
 *.xls
