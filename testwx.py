@@ -2,7 +2,7 @@
 
 import wx
 from wx import grid as wxgrid
-import getDisplayData
+import exceldata
 
 '''
 author mzh
@@ -14,7 +14,7 @@ class Main_Window(wx.Frame):
     def __init__(self, *args, **kwargs):
         super(Main_Window, self).__init__(*args, **kwargs)
         self.error_msg = ''
-        self.sale_data = getDisplayData.getData()
+        self.sale_data = exceldata.getData()
         self.InitUI()
 
     def InitUI(self):
