@@ -29,7 +29,6 @@ def get_data():
     sales_df = []
     payment_df = []
     for sheet_dict in template_list:
-        print sheet_dict['sheetname']
         select_fields = []
         if sheet_dict['sum'] is not None:
             select_fields.extend(sheet_dict['sum'])
@@ -101,7 +100,6 @@ def get_data():
                 for row_index, row in temp_sales_df.iterrows():
                     # i think it should row[sheet_dict['sum']], but actual is row[sheet_dict['sum']][0]
                     temp_sales_df.loc[row_index, sheet_dict['sheetname']] = row[sheet_dict['sum']][0] * float(coefficient_dict.get(row[sheet_dict['groupby'][1]], 1))
-                    print row
                 temp_sales_df = temp_sales_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['sheetname']]]
                 temp_sales_df = temp_sales_df.groupby(sheet_dict['groupby'][0]).sum().reset_index()
             sales_df.append(temp_sales_df)
@@ -115,12 +113,12 @@ def get_data():
     for single_df in payment_df:
         payment_results_df = pd.merge(payment_results_df, single_df, how='outer', on=template_list[0]['groupby'][0])
 
-    # sales_dict = sales_results_df.T.to_dict()
-    # payment_dict = payment_results_df.T.to_dict()
+    sales_dict = sales_results_df.T.fillna(0).to_dict()
+    payment_dict = payment_results_df.T.fillna(0).to_dict()
 
     ret_dict = {
-        'sales': sales_results_df.T,
-        'payment': payment_results_df.T,
+        'sales': sales_dict,
+        'payment': payment_dict,
         'sales_column': sales_column,
         'payment_column': payment_column
     }
