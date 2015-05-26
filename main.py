@@ -23,7 +23,16 @@ class MainWindow(wx.Frame):
         h_box = wx.BoxSizer(wx.HORIZONTAL)
         panel = wx.Panel(self, -1)
 
-        self.sales_grid = wxgrid.Grid(panel)
+        '''create notebook'''
+        self.notebook = wx.Notebook(panel, style=wx.NB_LEFT, size=(1000, 600))
+
+        '''add a scroll panel'''
+        self.sales_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
+        self.payment_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
+        self.sales_grid = wxgrid.Grid(self.sales_page)
+        self.payment_grid = wxgrid.Grid(self.payment_page)
+        self.notebook.AddPage(self.sales_page, u"销售统计", select=True)
+        self.notebook.AddPage(self.payment_page, u"中收")
         self.put_data_in_grid(self.sales_grid, self.data.get('sales'), self.data.get('sales_column'))
 
         h_box.Add(self.sales_grid, 1, wx.EXPAND)

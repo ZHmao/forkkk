@@ -14,7 +14,7 @@ def get_data():
     """
     返回值：一个dict，对应的value是DataFrame，以及列名
     """
-    excel_file = 'c:\\123.xls'
+    excel_file = 'c:\\2.xls'
     template_list = pubtool.readXml(os.getcwd()+'\\template.xml')
     coefficient_dict = pubtool.readCoefficientFromXml(os.getcwd()+'\\coefficient.xml')
     all_sheet_name = []
