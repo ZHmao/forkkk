@@ -20,23 +20,31 @@ class MainWindow(wx.Frame):
         self.initUI()
 
     def initUI(self):
-        h_box = wx.BoxSizer(wx.HORIZONTAL)
+        main_box = wx.BoxSizer(wx.VERTICAL)
         panel = wx.Panel(self, -1)
 
+        self.btn_import = wx.Button(panel, label='import', size=(50, 10))
+
         '''create notebook'''
-        self.notebook = wx.Notebook(panel, style=wx.NB_LEFT, size=(1000, 600))
+        self.notebook = wx.Notebook(panel, style=wx.NB_LEFT)
 
         '''add a scroll panel'''
         self.sales_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
-        self.payment_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
         self.sales_grid = wxgrid.Grid(self.sales_page)
-        self.payment_grid = wxgrid.Grid(self.payment_page)
+        self.sales_grid.SetSize((980, 100))
         self.notebook.AddPage(self.sales_page, u"销售统计", select=True)
-        self.notebook.AddPage(self.payment_page, u"中收")
         self.put_data_in_grid(self.sales_grid, self.data.get('sales'), self.data.get('sales_column'))
+        sales_sizer = wx.BoxSizer(wx.VERTICAL)
+        sales_sizer.Add(self.sales_grid, 1, wx.FIXED_MINSIZE)
+        self.sales_page.SetSizer(sales_sizer)
 
-        h_box.Add(self.sales_grid, 1, wx.EXPAND)
-        panel.SetSizer(h_box)
+        self.payment_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.Point(2, 480), wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
+        self.payment_grid = wxgrid.Grid(self.payment_page)
+        self.notebook.AddPage(self.payment_page, u"中收")
+
+        main_box.Add(self.btn_import, 1, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
+        main_box.Add(self.notebook, 1)
+        panel.SetSizer(main_box)
 
         self.Center()
         self.Show()
