@@ -20,34 +20,42 @@ class MainWindow(wx.Frame):
         self.initUI()
 
     def initUI(self):
+        panel = wx.Panel(self)
+
         main_box = wx.BoxSizer(wx.VERTICAL)
-        panel = wx.Panel(self, -1)
 
-        self.btn_import = wx.Button(panel, label='import', size=(50, 10))
+        '''button'''
+        btn_box = wx.BoxSizer(wx.HORIZONTAL)
+        self.btn_import = wx.Button(panel, label='import', size=(80, 35))
+        btn_box.Add(self.btn_import, 1)
+        self.btn_export = wx.Button(panel, label='export', size=(80, 35))
+        btn_box.Add(self.btn_export, 1, wx.LEFT, 10)
+        # proportion is very import
+        main_box.Add(btn_box, proportion=0, flag=wx.BOTTOM|wx.LEFT, border=10)
 
-        '''create notebook'''
+        main_box.Add((-1, 10))
+
+        '''create notebook, add a scroll panel'''
         self.notebook = wx.Notebook(panel, style=wx.NB_LEFT)
 
-        '''add a scroll panel'''
         self.sales_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
         self.sales_grid = wxgrid.Grid(self.sales_page)
-        self.sales_grid.SetSize((980, 100))
+        self.sales_grid.SetSize((1300, 500))
         self.notebook.AddPage(self.sales_page, u"销售统计", select=True)
         self.put_data_in_grid(self.sales_grid, self.data.get('sales'), self.data.get('sales_column'))
-        sales_sizer = wx.BoxSizer(wx.VERTICAL)
-        sales_sizer.Add(self.sales_grid, 1, wx.FIXED_MINSIZE)
-        self.sales_page.SetSizer(sales_sizer)
 
-        self.payment_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.Point(2, 480), wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
+        self.payment_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
         self.payment_grid = wxgrid.Grid(self.payment_page)
+        self.payment_grid.SetSize((1300, 500))
         self.notebook.AddPage(self.payment_page, u"中收")
+        self.put_data_in_grid(self.payment_grid, self.data.get('payment'), self.data.get('payment_column'))
+        main_box.Add(self.notebook, proportion=1, flag=wx.EXPAND)
 
-        main_box.Add(self.btn_import, 1, wx.EXPAND|wx.LEFT|wx.RIGHT|wx.TOP)
-        main_box.Add(self.notebook, 1)
         panel.SetSizer(main_box)
 
         self.Center()
         self.Show()
+
 
     def put_data_in_grid(self, target_grid=None, grid_data=None, col_name_list=None):
         if grid_data is None or col_name_list is None:
@@ -74,5 +82,5 @@ class MainWindow(wx.Frame):
 
 if __name__ == '__main__':
     app = wx.App()
-    MainWindow(None, title='main window', size=(1000, 600))
+    mw = MainWindow(None, title='Statistics', size=(1350, 600), style=wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CAPTION | wx.SYSTEM_MENU)
     app.MainLoop()

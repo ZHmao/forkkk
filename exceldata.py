@@ -56,72 +56,80 @@ def get_data():
         if sheet_dict['count'] == 0:
             grouped_df = grouped_df.sum().reset_index()
         else:
-            grouped_df = grouped_df.count().reset_index()
+            '''add a sum column to instead count'''
+            sheet_dict['sum'] = ['forcount']
+            selected_df[sheet_dict['sum'][0]] = 1
+            grouped_df = selected_df.groupby(sheet_dict['groupby'])
+            grouped_df = grouped_df.sum().reset_index()
 
         """用作合计"""
-        grouped_df[sheet_dict['sheetname']] = 0
+        grouped_df[sheet_dict['ascolumnname']] = 0
 
         temp_sales_df = None
         temp_payment_df = None
         """state为0表示是销售统计的模板，1表示是中收的模板，2表示是公用的模板。"""
         if sheet_dict['state'] == '0':
             temp_sales_df = grouped_df.copy()
-            sales_column.append(sheet_dict['sheetname'])
+            if sheet_dict['ascolumnname'] not in sales_column:
+                sales_column.append(sheet_dict['ascolumnname'])
         elif sheet_dict['state'] == '1':
             temp_payment_df = grouped_df.copy()
-            payment_column.append(sheet_dict['sheetname'])
+            if sheet_dict['ascolumnname'] not in payment_column:
+                payment_column.append(sheet_dict['ascolumnname'])
         else:
             temp_sales_df = grouped_df.copy()
             temp_payment_df = grouped_df.copy()
-            sales_column.append(sheet_dict['sheetname'])
-            payment_column.append(sheet_dict['sheetname'])
+            if sheet_dict['ascolumnname'] not in sales_column:
+                sales_column.append(sheet_dict['ascolumnname'])
+            if sheet_dict['ascolumnname'] not in payment_column:
+                payment_column.append(sheet_dict['ascolumnname'])
 
         """计算值"""
         """中收"""
         if temp_payment_df is not None:
             if len(sheet_dict['groupby']) == 1:
                 for row_index, row in temp_payment_df.iterrows():
-                    temp_payment_df.loc[row_index, sheet_dict['sheetname']] = row[sheet_dict['sum']][0] * float(coefficient_dict.get(sheet_dict['sheetname'], 1))
-                temp_payment_df = temp_payment_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['sheetname']]]
+                    temp_payment_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(sheet_dict['sheetname'], 1))
+                temp_payment_df = temp_payment_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['ascolumnname']]]
             elif len(sheet_dict['groupby']) == 2:
                 for row_index, row in temp_payment_df.iterrows():
-                    temp_payment_df.loc[row_index, sheet_dict['sheetname']] = row[sheet_dict['sum']][0] * float(coefficient_dict.get(row[sheet_dict['groupby'][1]], 1))
-                temp_payment_df = temp_payment_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['sheetname']]]
+                    temp_payment_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(row[sheet_dict['groupby'][1]], 1))
+                temp_payment_df = temp_payment_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['ascolumnname']]]
                 temp_payment_df = temp_payment_df.groupby(sheet_dict['groupby'][0]).sum().reset_index()
-            if sheet_dict['sheetname'] not in payment_df:
-                payment_df[sheet_dict['sheetname']] = temp_payment_df
+            if sheet_dict['ascolumnname'] not in payment_df:
+                payment_df[sheet_dict['ascolumnname']] = temp_payment_df
             else:
-                temp_payment_df = pd.merge(temp_payment_df, payment_df.get(sheet_dict['sheetname']), how='outer', on=sheet_dict['groupby'][0], suffixes=['', '_x'])
-                temp_payment_df.loc[:, [sheet_dict['sheetname']]] += temp_payment_df.loc[:, [sheet_dict['sheetname']+'_x']]
-                del temp_payment_df[sheet_dict['sheetname']+'_x']
-                payment_df[sheet_dict['sheetname']] = temp_payment_df
+                temp_payment_df = pd.merge(temp_payment_df, payment_df.get(sheet_dict['ascolumnname']), how='outer', on=sheet_dict['groupby'][0], suffixes=['', '_x'])
+                temp_payment_df[sheet_dict['ascolumnname']] += temp_payment_df[sheet_dict['ascolumnname']+'_x']
+                del temp_payment_df[sheet_dict['ascolumnname']+'_x']
+                payment_df[sheet_dict['ascolumnname']] = temp_payment_df
 
         """销售统计"""
         if temp_sales_df is not None:
-            if len(sheet_dict['groupby']) == 0:
+            if len(sheet_dict['groupby']) == 1:
                 for row_index, row in temp_sales_df.iterrows():
-                    temp_sales_df.loc[row_index, sheet_dict['sheetname']] = row[sheet_dict['sum']][0]
-                temp_sales_df = temp_sales_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['sheetname']]]
+                    temp_sales_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]]
+                temp_sales_df = temp_sales_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['ascolumnname']]]
             elif len(sheet_dict['groupby']) == 2:
                 for row_index, row in temp_sales_df.iterrows():
                     # i think it should row[sheet_dict['sum']], but actual is row[sheet_dict['sum']][0]
-                    temp_sales_df.loc[row_index, sheet_dict['sheetname']] = row[sheet_dict['sum']][0] * float(coefficient_dict.get(row[sheet_dict['groupby'][1]], 1))
-                temp_sales_df = temp_sales_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['sheetname']]]
+                    temp_sales_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(row[sheet_dict['groupby'][1]], 1))
+                temp_sales_df = temp_sales_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['ascolumnname']]]
                 temp_sales_df = temp_sales_df.groupby(sheet_dict['groupby'][0]).sum().reset_index()
-            if sheet_dict['sheetname'] not in sales_df:
-                sales_df[sheet_dict['sheetname']] = temp_sales_df
+            if sheet_dict['ascolumnname'] not in sales_df:
+                sales_df[sheet_dict['ascolumnname']] = temp_sales_df
             else:
-                temp_sales_df = pd.merge(temp_sales_df, sales_df.get(sheet_dict['sheetname']), how='outer', on=sheet_dict['groupby'][0], suffixes=['', '_x'])
-                temp_sales_df.loc[:, [sheet_dict['sheetname']]] += temp_sales_df.loc[:, [sheet_dict['sheetname']+'_x']]
-                del temp_sales_df[sheet_dict['sheetname']+'_x']
-                sales_df[sheet_dict['sheetname']] = temp_sales_df
+                temp_sales_df = pd.merge(temp_sales_df, sales_df.get(sheet_dict['ascolumnname']), how='outer', on=sheet_dict['groupby'][0], suffixes=['', '_x'])
+                temp_sales_df[sheet_dict['ascolumnname']] += temp_sales_df[sheet_dict['ascolumnname']+'_x']
+                del temp_sales_df[sheet_dict['ascolumnname']+'_x']
+                sales_df[sheet_dict['ascolumnname']] = temp_sales_df
 
     # use merge.
-    sales_results_df = sales_df.pop(template_list[0]['sheetname'])
+    sales_results_df = sales_df.pop(template_list[0]['ascolumnname'])
     for single_df in sales_df.values():
         sales_results_df = pd.merge(sales_results_df, single_df, how='outer', on=template_list[0]['groupby'][0])
 
-    payment_results_df = payment_df.pop(template_list[0]['sheetname'])
+    payment_results_df = payment_df.pop(template_list[0]['ascolumnname'])
     for single_df in payment_df.values():
         payment_results_df = pd.merge(payment_results_df, single_df, how='outer', on=template_list[0]['groupby'][0])
 
