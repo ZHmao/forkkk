@@ -15,7 +15,7 @@ def get_data(excel_file=None):
     返回值：一个dict，对应的value是DataFrame，以及列名
     """
     if excel_file is None:
-        return
+        return False
     template_list = pubtool.readXml(os.getcwd()+'\\template.xml')
     coefficient_dict = pubtool.readCoefficientFromXml(os.getcwd()+'\\coefficient.xml')
     all_sheet_name = []
@@ -134,8 +134,33 @@ def get_data(excel_file=None):
     for single_df in payment_df.values():
         payment_results_df = pd.merge(payment_results_df, single_df, how='outer', on=template_list[0]['groupby'][0])
 
-    sales_dict = sales_results_df.T.fillna(0).to_dict()
-    payment_dict = payment_results_df.T.fillna(0).to_dict()
+    '''合计'''
+    sales_results_df = sales_results_df.fillna(0)
+    sales_results_df[u'合计'] = 0
+    for i in sales_column:
+        if i != template_list[0]['groupby'][0]:
+            sales_results_df[u'合计'] += sales_results_df[i]
+    sales_column.append(u'合计')
+
+    payment_results_df = payment_results_df.fillna(0)
+    payment_results_df[u'合计'] = 0
+    for i in payment_column:
+        if i != template_list[0]['groupby'][0]:
+            payment_results_df[u'合计'] += payment_results_df[i]
+    payment_column.append(u'合计')
+
+    current_index = len(sales_results_df.index)
+    sales_results_df = sales_results_df.T
+    sales_results_df[current_index] = sales_results_df.sum(axis=1)
+    sales_results_df[current_index][template_list[0]['groupby'][0]] = u'合计'
+
+    current_index = len(payment_results_df.index)
+    payment_results_df = payment_results_df.T
+    payment_results_df[current_index] = payment_results_df.sum(axis=1)
+    payment_results_df[current_index][template_list[0]['groupby'][0]] = u'合计'
+
+    sales_dict = sales_results_df.to_dict()
+    payment_dict = payment_results_df.to_dict()
 
     ret_dict = {
         'sales': sales_dict,
@@ -146,5 +171,13 @@ def get_data(excel_file=None):
 
     return ret_dict
 
+def save_to_excel(data_dict=None, file_path=None):
+    if data_dict is None or file_path is None:
+        return False
+
+    tosave_df = pd.DataFrame.from_dict(data_dict)
+    writer = pd.ExcelWriter(file_path)
+    tosave_df.T.to_excel(writer, 'sheet1')
+    writer.save()
 
 get_data()

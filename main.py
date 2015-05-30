@@ -11,6 +11,8 @@ mzh
 
 ID_BTN_IMPORT = wx.NewId()
 ID_BTN_EXPORT = wx.NewId()
+ID_PAGE_SALES = wx.NewId()
+ID_PAGE_PAYMENT = wx.NewId()
 
 class MainWindow(wx.Frame):
 
@@ -42,14 +44,12 @@ class MainWindow(wx.Frame):
         '''create notebook, add a scroll panel'''
         self.notebook = wx.Notebook(panel, style=wx.NB_LEFT)
 
-        self.sales_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
+        self.sales_page = wx.ScrolledWindow(self.notebook, ID_PAGE_SALES, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
         self.sales_grid = wxgrid.Grid(self.sales_page)
-        self.sales_grid.SetSize((1300, 500))
         self.notebook.AddPage(self.sales_page, u"销售统计", select=True)
 
-        self.payment_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
+        self.payment_page = wx.ScrolledWindow(self.notebook, ID_PAGE_PAYMENT, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
         self.payment_grid = wxgrid.Grid(self.payment_page)
-        self.payment_grid.SetSize((1300, 500))
         self.notebook.AddPage(self.payment_page, u"中收")
         main_box.Add(self.notebook, proportion=1, flag=wx.EXPAND)
 
@@ -65,6 +65,7 @@ class MainWindow(wx.Frame):
             self.import_data()
         elif eid == ID_BTN_EXPORT:
             print 'do export'
+            self.export_data()
 
     '''导入数据'''
     def import_data(self):
@@ -75,7 +76,10 @@ class MainWindow(wx.Frame):
             if self.data is not None:
                 self.put_data_in_grid(self.sales_grid, self.data.get('sales'), self.data.get('sales_column'))
                 self.put_data_in_grid(self.payment_grid, self.data.get('payment'), self.data.get('payment_column'))
+                self.sales_grid.SetSize((1300, 500))
+                self.payment_grid.SetSize((1300, 500))
 
+    '''目前不支持多次导入'''
     def put_data_in_grid(self, target_grid=None, grid_data=None, col_name_list=None):
         if grid_data is None or col_name_list is None:
             self.error_msg += 'oh, there is no data in your specified file'
@@ -83,6 +87,11 @@ class MainWindow(wx.Frame):
         col_count = len(col_name_list)
         row_count = len(grid_data)
 
+        target_grid.ClearGrid()
+        if target_grid.GetNumberRows() > 0:
+            target_grid.DeleteRows()
+        if target_grid.GetNumberCols() > 0:
+            target_grid.DeleteCols()
         target_grid.CreateGrid(row_count, col_count)
         '''设置列名'''
         for i in xrange(col_count):
@@ -98,6 +107,18 @@ class MainWindow(wx.Frame):
                     cell_value = str(cell_value)
                 target_grid.SetCellValue(row_index, i, cell_value)
             row_index += 1
+
+    def export_data(self):
+        export_dlg = wx.FileDialog(self, 'Save excel file', '', '', 'Excel File|*.xls', wx.FD_SAVE)
+        if export_dlg.ShowModal() == wx.ID_OK:
+            file_path = export_dlg.GetPath()
+            page_id = self.notebook.GetCurrentPage().GetId()
+            if page_id == ID_PAGE_SALES:
+                exceldata.save_to_excel(self.data.get('sales'), file_path)
+                wx.MessageBox(u'销售数据导出成功', u'提示')
+            elif page_id == ID_PAGE_PAYMENT:
+                exceldata.save_to_excel(self.data.get('payment'), file_path)
+                wx.MessageBox(u'中收数据导出成功', u'提示')
 
 if __name__ == '__main__':
     app = wx.App()

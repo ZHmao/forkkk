@@ -6,7 +6,7 @@ build_exe_options = {"packages": ["os"], "excludes": ["tkinter"]}
 
 # GUI applications require a different base on Windows (the default is for a
 # console application).
-base = "Win32GUI"
+base = None
 if sys.platform == "win32":
     base = "Win32GUI"
 
