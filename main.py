@@ -9,6 +9,8 @@ mzh
 2015-4-28
 '''
 
+ID_BTN_IMPORT = wx.NewId()
+ID_BTN_EXPORT = wx.NewId()
 
 class MainWindow(wx.Frame):
 
@@ -16,7 +18,7 @@ class MainWindow(wx.Frame):
         super(MainWindow, self).__init__(*args, **kwargs)
 
         self.error_msg = ''
-        self.data = exceldata.get_data()
+        # self.data = exceldata.get_data()
         self.initUI()
 
     def initUI(self):
@@ -26,9 +28,11 @@ class MainWindow(wx.Frame):
 
         '''button'''
         btn_box = wx.BoxSizer(wx.HORIZONTAL)
-        self.btn_import = wx.Button(panel, label='import', size=(80, 35))
+        self.btn_import = wx.Button(panel, label=u'导入', size=(80, 35), id=ID_BTN_IMPORT)
+        self.btn_import.Bind(wx.EVT_BUTTON, self.on_button_clicked)
         btn_box.Add(self.btn_import, 1)
-        self.btn_export = wx.Button(panel, label='export', size=(80, 35))
+        self.btn_export = wx.Button(panel, label=u'导出', size=(80, 35), id=ID_BTN_EXPORT)
+        self.btn_export.Bind(wx.EVT_BUTTON, self.on_button_clicked)
         btn_box.Add(self.btn_export, 1, wx.LEFT, 10)
         # proportion is very import
         main_box.Add(btn_box, proportion=0, flag=wx.BOTTOM|wx.LEFT, border=10)
@@ -42,13 +46,11 @@ class MainWindow(wx.Frame):
         self.sales_grid = wxgrid.Grid(self.sales_page)
         self.sales_grid.SetSize((1300, 500))
         self.notebook.AddPage(self.sales_page, u"销售统计", select=True)
-        self.put_data_in_grid(self.sales_grid, self.data.get('sales'), self.data.get('sales_column'))
 
         self.payment_page = wx.ScrolledWindow(self.notebook, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.HSCROLL | wx.VSCROLL)
         self.payment_grid = wxgrid.Grid(self.payment_page)
         self.payment_grid.SetSize((1300, 500))
         self.notebook.AddPage(self.payment_page, u"中收")
-        self.put_data_in_grid(self.payment_grid, self.data.get('payment'), self.data.get('payment_column'))
         main_box.Add(self.notebook, proportion=1, flag=wx.EXPAND)
 
         panel.SetSizer(main_box)
@@ -56,6 +58,23 @@ class MainWindow(wx.Frame):
         self.Center()
         self.Show()
 
+    def on_button_clicked(self, e):
+        eid = e.GetId()
+        if eid == ID_BTN_IMPORT:
+            print 'do import'
+            self.import_data()
+        elif eid == ID_BTN_EXPORT:
+            print 'do export'
+
+    '''导入数据'''
+    def import_data(self):
+        import_dlg = wx.FileDialog(self, 'Open Excel Doc', '', '', 'Excel files |*.xls*', wx.FD_OPEN)
+        if import_dlg.ShowModal() == wx.ID_OK:
+            file_path = import_dlg.GetPath()
+            self.data = exceldata.get_data(file_path)
+            if self.data is not None:
+                self.put_data_in_grid(self.sales_grid, self.data.get('sales'), self.data.get('sales_column'))
+                self.put_data_in_grid(self.payment_grid, self.data.get('payment'), self.data.get('payment_column'))
 
     def put_data_in_grid(self, target_grid=None, grid_data=None, col_name_list=None):
         if grid_data is None or col_name_list is None:

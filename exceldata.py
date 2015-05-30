@@ -10,11 +10,12 @@ mzh
 '''
 
 
-def get_data():
+def get_data(excel_file=None):
     """
     返回值：一个dict，对应的value是DataFrame，以及列名
     """
-    excel_file = 'c:\\2.xls'
+    if excel_file is None:
+        return
     template_list = pubtool.readXml(os.getcwd()+'\\template.xml')
     coefficient_dict = pubtool.readCoefficientFromXml(os.getcwd()+'\\coefficient.xml')
     all_sheet_name = []
