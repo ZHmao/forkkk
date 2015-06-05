@@ -30,6 +30,12 @@ def get_data(excel_file=None):
     sales_df = dict()
     payment_df = dict()
     for sheet_dict in template_list:
+
+        #test
+        if sheet_dict['sheetname'] == u'银行卡':
+            print u'银行卡'
+        #test
+
         select_fields = []
         if sheet_dict['sum'] is not None:
             select_fields.extend(sheet_dict['sum'])
@@ -54,7 +60,7 @@ def get_data(excel_file=None):
 
         """分组合并"""
         grouped_df = selected_df.groupby(sheet_dict['groupby'])
-        if sheet_dict['count'] == 0:
+        if sheet_dict['count'] == '0':
             grouped_df = grouped_df.sum().reset_index()
         else:
             '''add a sum column to instead count'''
@@ -90,7 +96,7 @@ def get_data(excel_file=None):
         if temp_payment_df is not None:
             if len(sheet_dict['groupby']) == 1:
                 for row_index, row in temp_payment_df.iterrows():
-                    temp_payment_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(sheet_dict['sheetname'], 1))
+                    temp_payment_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(sheet_dict['sum'][0], 1))
                 temp_payment_df = temp_payment_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['ascolumnname']]]
             elif len(sheet_dict['groupby']) == 2:
                 for row_index, row in temp_payment_df.iterrows():
