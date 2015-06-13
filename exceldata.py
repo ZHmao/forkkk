@@ -129,7 +129,7 @@ def get_data(excel_file=None):
                 payment_df[sheet_dict['ascolumnname']] = temp_payment_df
 
         log.debug('line133, sales')
-        """销售统计"""
+        """销售统计[所有销售统计用的系数在名字后面都加一个后缀 下划线'_']"""
         if temp_sales_df is not None:
             if len(sheet_dict['groupby']) == 1:
                 for row_index, row in temp_sales_df.iterrows():
@@ -137,8 +137,8 @@ def get_data(excel_file=None):
                 temp_sales_df = temp_sales_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['ascolumnname']]]
             elif len(sheet_dict['groupby']) == 2:
                 for row_index, row in temp_sales_df.iterrows():
-                    # i think it should row[sheet_dict['sum']], but actual is row[sheet_dict['sum']][0]
-                    temp_sales_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(row[sheet_dict['groupby'][1]], 1))
+                    # i think it should be row[sheet_dict['sum']], but actual is row[sheet_dict['sum']][0]
+                    temp_sales_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(row[sheet_dict['groupby'][1]]+'_', 1))
                 temp_sales_df = temp_sales_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['ascolumnname']]]
                 temp_sales_df = temp_sales_df.groupby(sheet_dict['groupby'][0]).sum().reset_index()
             if sheet_dict['ascolumnname'] not in sales_df:
