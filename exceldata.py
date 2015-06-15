@@ -15,27 +15,27 @@ def get_data(excel_file=None):
     """
     返回值：一个dict，对应的value是DataFrame，以及列名
     """
-    logging.basicConfig(filename = os.path.join(os.getcwd(), 'log.txt'), level = logging.DEBUG)
-    log = logging.getLogger('root')
-    log.debug('line 20')
+    logger = logging.getLogger('exceldata')
+    logger.info('===============================module [exceldata]=================')
+
     if excel_file is None:
         return u'指定的文件内容为空或格式错误！'
 
-    log.debug('line 24')
+    logger.info('read configuration file')
+
     template_list = pubtool.readXml(os.getcwd()+'\\template.xml')
     coefficient_dict = pubtool.readCoefficientFromXml(os.getcwd()+'\\coefficient.xml')
     if len(template_list) == 0 or len(coefficient_dict) == 0:
         '''需要实现检测配置文件'''
         return u'没有找到配置文件！'
 
-    log.debug('line 31')
+    logger.info('read all sheet into df')
+
     all_sheet_name = []
     for sheet_dict in template_list:
         if sheet_dict['sheetname'] not in all_sheet_name:
             all_sheet_name.append(sheet_dict['sheetname'])
-    log.debug('line 36')
     all_original_df = pd.read_excel(excel_file, all_sheet_name)
-    log.debug('line 38')
 
     '''将第一列设为营销人员'''
     sales_column = [template_list[0]['groupby'][0]]
@@ -44,20 +44,17 @@ def get_data(excel_file=None):
     sales_df = dict()
     payment_df = dict()
     for sheet_dict in template_list:
-        log.debug(sheet_dict['sheetname'])
+        logger.info('--------for '+sheet_dict['sheetname'])
 
-        log.debug('1')
+        logger.info('first select')
         select_fields = []
         if sheet_dict['sum'] is not None:
-            log.debug('2')
             select_fields.extend(sheet_dict['sum'])
         if sheet_dict['groupby'] is not None:
-            log.debug('3')
             select_fields.extend(sheet_dict['groupby'])
-        log.debug('4')
         init_df = all_original_df[sheet_dict['sheetname']]
 
-        log.debug('line62, where')
+        logger.info('where sentence')
         """根据where条件过滤"""
         if sheet_dict['where'] is not None:
             column_and_value = sheet_dict['where'].split('=')
@@ -66,14 +63,14 @@ def get_data(excel_file=None):
         else:
             where_df = init_df
 
-        log.debug('line71, select')
+        logger.info('second select')
         """筛选所需的列"""
         selected_df = where_df.loc[:, select_fields]
 
         # data_dict = selected_df.to_dict()
         # print data_dict
 
-        log.debug('line78, group')
+        logger.info('group sentence')
         """分组合并"""
         grouped_df = selected_df.groupby(sheet_dict['groupby'])
         if sheet_dict['count'] == '0':
@@ -107,7 +104,7 @@ def get_data(excel_file=None):
             if sheet_dict['ascolumnname'] not in payment_column:
                 payment_column.append(sheet_dict['ascolumnname'])
 
-        log.debug('line112, payment compute')
+        logger.info('payment compute')
         """计算值"""
         """中收"""
         if temp_payment_df is not None:
@@ -128,7 +125,7 @@ def get_data(excel_file=None):
                 del temp_payment_df[sheet_dict['ascolumnname']+'_x']
                 payment_df[sheet_dict['ascolumnname']] = temp_payment_df
 
-        log.debug('line133, sales')
+        logger.info('sales compute')
         """销售统计[所有销售统计用的系数在名字后面都加一个后缀 下划线'_']"""
         if temp_sales_df is not None:
             if len(sheet_dict['groupby']) == 1:
@@ -149,7 +146,7 @@ def get_data(excel_file=None):
                 del temp_sales_df[sheet_dict['ascolumnname']+'_x']
                 sales_df[sheet_dict['ascolumnname']] = temp_sales_df
 
-    log.debug('line154, merge')
+    logger.info('for merge')
     # use merge.
     sales_results_df = sales_df.pop(template_list[0]['ascolumnname'])
     for single_df in sales_df.values():
@@ -193,6 +190,8 @@ def get_data(excel_file=None):
         'sales_column': sales_column,
         'payment_column': payment_column
     }
+
+    logger.info('=============================end=====================')
 
     return ret_dict
 

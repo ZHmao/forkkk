@@ -21,15 +21,18 @@ class MainWindow(wx.Frame):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
-        logging.basicConfig(filename = os.path.join(os.getcwd(), 'log.txt'), level = logging.DEBUG)
-        self.log = logging.getLogger('root')
+        logging.basicConfig(filename=os.path.join(os.getcwd(), 'log.txt'), level=logging.INFO,
+                            format='%(asctime)s - %(name)s - %(levelname)s - [%(lineno)s] - %(message)s')
+        self.logger = logging.getLogger('main')
+        self.logger.setLevel(logging.INFO)
+        self.logger.info('===============================module [main]=================')
 
         self.error_msg = ''
         # self.data = exceldata.get_data()
         self.initUI()
 
     def initUI(self):
-        self.log.debug('[main.py] line31 initui')
+        self.logger.info('init main UI')
 
         panel = wx.Panel(self)
 
@@ -68,22 +71,24 @@ class MainWindow(wx.Frame):
     def on_button_clicked(self, e):
         eid = e.GetId()
         if eid == ID_BTN_IMPORT:
-            print 'do import'
+            self.logger.info('--------clicked import button')
             self.import_data()
         elif eid == ID_BTN_EXPORT:
-            print 'do export'
+            self.logger.info('--------clicked export button')
             self.export_data()
 
     '''导入数据'''
     def import_data(self):
-        self.log.debug('click event, import data')
+        self.logger.info('read import file path')
 
         import_dlg = wx.FileDialog(self, 'Open Excel Doc', '', '', 'Excel files |*.xls*', wx.FD_OPEN)
         if import_dlg.ShowModal() == wx.ID_OK:
             file_path = import_dlg.GetPath()
+
+            self.logger.info('begin to parse excel data')
             self.data = exceldata.get_data(file_path)
             if type(self.data) == unicode:
-				self.log.debug('import data, error msg:'+self.data)
+				self.logger.info('import data, error msg:'+self.data)
             if self.data is not None:
                 self.put_data_in_grid(self.sales_grid, self.data.get('sales'), self.data.get('sales_column'))
                 self.put_data_in_grid(self.payment_grid, self.data.get('payment'), self.data.get('payment_column'))
@@ -92,6 +97,8 @@ class MainWindow(wx.Frame):
 
     '''目前不支持多次导入'''
     def put_data_in_grid(self, target_grid=None, grid_data=None, col_name_list=None):
+        self.logger.info('put data in grid')
+
         if grid_data is None or col_name_list is None:
             self.error_msg += 'oh, there is no data in your specified file'
             wx.MessageBox(self.error_msg)
@@ -121,6 +128,8 @@ class MainWindow(wx.Frame):
             row_index += 1
 
     def export_data(self):
+        self.logger.info('read export file path')
+
         export_dlg = wx.FileDialog(self, 'Save excel file', '', '', 'Excel File|*.xls', wx.FD_SAVE)
         if export_dlg.ShowModal() == wx.ID_OK:
             file_path = export_dlg.GetPath()
