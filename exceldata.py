@@ -48,7 +48,7 @@ def get_data(excel_file=None):
 
         logger.info('first select')
         select_fields = []
-        if sheet_dict['sum'] is not None:
+        if sheet_dict['sum'] is not None and len(sheet_dict['sum']) > 0:
             select_fields.extend(sheet_dict['sum'])
         if sheet_dict['groupby'] is not None:
             select_fields.extend(sheet_dict['groupby'])
@@ -110,11 +110,14 @@ def get_data(excel_file=None):
         if temp_payment_df is not None:
             if len(sheet_dict['groupby']) == 1:
                 for row_index, row in temp_payment_df.iterrows():
-                    temp_payment_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(sheet_dict['sum'][0], 1))
+                    if sheet_dict['count'] == '0':
+                        temp_payment_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(sheet_dict['sheetname']+'_'+sheet_dict['sum'][0], 0))
+                    else:
+                        temp_payment_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(sheet_dict['sheetname'], 0))
                 temp_payment_df = temp_payment_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['ascolumnname']]]
             elif len(sheet_dict['groupby']) == 2:
                 for row_index, row in temp_payment_df.iterrows():
-                    temp_payment_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(row[sheet_dict['groupby'][1]], 1))
+                    temp_payment_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(row[sheet_dict['groupby'][1]], 0))
                 temp_payment_df = temp_payment_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['ascolumnname']]]
                 temp_payment_df = temp_payment_df.groupby(sheet_dict['groupby'][0]).sum().reset_index()
             if sheet_dict['ascolumnname'] not in payment_df:
@@ -130,7 +133,10 @@ def get_data(excel_file=None):
         if temp_sales_df is not None:
             if len(sheet_dict['groupby']) == 1:
                 for row_index, row in temp_sales_df.iterrows():
-                    temp_sales_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]]
+                    if sheet_dict['count'] == '0':
+                        temp_sales_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(sheet_dict['sheetname']+'_'+sheet_dict['sum'][0]+'_', 1))
+                    else:
+                        temp_sales_df.loc[row_index, sheet_dict['ascolumnname']] = row[sheet_dict['sum'][0]] * float(coefficient_dict.get(sheet_dict['sheetname']+'_', 1))
                 temp_sales_df = temp_sales_df.loc[:, [sheet_dict['groupby'][0], sheet_dict['ascolumnname']]]
             elif len(sheet_dict['groupby']) == 2:
                 for row_index, row in temp_sales_df.iterrows():
