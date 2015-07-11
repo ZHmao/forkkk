@@ -92,8 +92,8 @@ class MainWindow(wx.Frame):
             if self.data is not None:
                 self.put_data_in_grid(self.sales_grid, self.data.get('sales'), self.data.get('sales_column'))
                 self.put_data_in_grid(self.payment_grid, self.data.get('payment'), self.data.get('payment_column'))
-                self.sales_grid.SetSize((1300, 500))
-                self.payment_grid.SetSize((1300, 500))
+                self.sales_grid.SetSize((1120, 500))
+                self.payment_grid.SetSize((1120, 500))
 
     '''目前不支持多次导入'''
     def put_data_in_grid(self, target_grid=None, grid_data=None, col_name_list=None):
@@ -143,5 +143,5 @@ class MainWindow(wx.Frame):
 
 if __name__ == '__main__':
     app = wx.App()
-    mw = MainWindow(None, title='Statistics', size=(1350, 600), style=wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CAPTION | wx.SYSTEM_MENU)
+    mw = MainWindow(None, title='Statistics', size=(1150, 600), style=wx.CLOSE_BOX | wx.MINIMIZE_BOX | wx.CAPTION | wx.SYSTEM_MENU)
     app.MainLoop()
